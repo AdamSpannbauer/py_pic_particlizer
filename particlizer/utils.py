@@ -1,19 +1,26 @@
 import cv2
 import numpy as np
-from particle_class import Particle
+from .particle_class import Particle
 
 
-def image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=()):
+def image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=(), background_color=(50, 50, 50)):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     if not thresh_args:
         thresh_args = (5, 255, 0)
     _, threshed = cv2.threshold(gray, *thresh_args)
 
     _, contours, _ = cv2.findContours(threshed, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
     canvas_area = canvas.shape[0] * canvas.shape[1]
-    contours = [c for c in contours if cv2.contourArea(c) < .95 * canvas_area]
-    contour_colors = [get_contour_color(c, image) for c in contours]
-    contour_points = [down_sample_points(c, every_n) for c in contours]
+    contour_points = []
+    contour_colors = []
+    for c in contours:
+        if cv2.contourArea(c) >= .95 * canvas_area:
+            continue
+        color = get_contour_color(c, image, background_color)
+        if not color == background_color:
+            contour_colors.append(color)
+            contour_points.append(down_sample_points(c, every_n))
 
     particles = create_particles(contour_points, contour_colors, image, rand_location=True, radius=radius)
 
@@ -24,10 +31,10 @@ def down_sample_points(contour, every_n=20):
     return contour[::every_n]
 
 
-def get_contour_color(contour, image):
+def get_contour_color(contour, image, background_color=(50, 50, 50)):
     moments = cv2.moments(contour)
     if not sum(list(moments.values())):
-        return 50, 50, 50
+        return background_color
     cx = int(moments["m10"] / moments["m00"])
     cy = int(moments["m01"] / moments["m00"])
 
@@ -75,7 +82,7 @@ def get_mouse_xy(event, x, y, flags, param):
         mouse_y = y
 
 
-def steer_image(image, *args):
+def particlize(image, *args):
     canvas = np.zeros(image.shape, dtype='uint8') + 50
 
     particles = image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=args)
@@ -115,8 +122,9 @@ def steer_image(image, *args):
                         particle.color = (30, 30, 200)
                     else:
                         particle.color = (100, 100, 150)
-                    game_target = tuple(np.random.randint(1, canvas.shape[1], 1)) + \
-                                  tuple(np.random.randint(1, canvas.shape[0], 1))
+                    game_target = \
+                        tuple(np.random.randint(1, canvas.shape[1], 1)) + \
+                        tuple(np.random.randint(1, canvas.shape[0], 1))
                     particle.game_target = np.array(game_target)
                 elif particle.is_hit:
                     particle_hit_count += 1
@@ -157,6 +165,3 @@ def steer_image(image, *args):
                                     tuple(np.random.randint(1, canvas.shape[0], 1))
         elif key == ord('g'):
             game_mode = not game_mode
-            game_target = tuple(np.random.randint(1, canvas.shape[1], 1)) + \
-                          tuple(np.random.randint(1, canvas.shape[0], 1))
-            particle.game_target = np.array(game_target)

@@ -40,7 +40,9 @@ class Particle:
             xy_diff = np.array(mouse_loc) - self.location
             dist = np.linalg.norm(xy_diff)
             if dist <= 50:
-                speed = np.interp(xy_diff, (-max(canvas.shape), max(canvas.shape) + 1), (-self.max_speed, self.max_speed))
+                speed = np.interp(xy_diff,
+                                  (-max(canvas.shape), max(canvas.shape) + 1),
+                                  (-self.max_speed, self.max_speed))
                 self.speed = -10 * speed
 
     def check_hit(self, mouse_loc, mouse_range=50):

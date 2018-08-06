@@ -1,7 +1,7 @@
 import argparse
 import cv2
 import imutils
-from utils import steer_image
+from .utils import particlize
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-i', '--input', default='input/pyimage_combo.png',
@@ -15,9 +15,9 @@ args = vars(ap.parse_args())
 image = cv2.imread(args['input'])
 image = imutils.resize(image, width=args['resizeWidth'])
 if args['thresholdParams']:
-    steer_image(image, *tuple(args['thresholdParams']))
+    particlize(image, *tuple(args['thresholdParams']))
 else:
-    steer_image(image)
+    particlize(image)
 
 # use for sensor tower logo
 # steer_image(image, 75, 255, 0)
