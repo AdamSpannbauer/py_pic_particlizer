@@ -4,7 +4,7 @@ import imutils
 from .utils import particlize
 
 ap = argparse.ArgumentParser()
-ap.add_argument('-i', '--input', default='input/pyimage_combo.png',
+ap.add_argument('-i', '--input', required=True,
                 help='path to input image')
 ap.add_argument('-w', '--resizeWidth', type=int, default=900,
                 help='pixel width to resize to before processing')

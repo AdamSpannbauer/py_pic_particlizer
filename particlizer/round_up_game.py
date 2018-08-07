@@ -16,9 +16,6 @@ def increment_blinker(blink_counter, blink_flag, blink_duration=8):
 def round_up_game(canvas, particles, blink_flag, mouse_loc):
     game_mouse_size = 100
     mouse_x, mouse_y = mouse_loc
-    if blink_flag:
-        cv2.putText(canvas, 'CATCH THEM!!', (10, canvas.shape[0] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, (30, 30, 200), thickness=3)
 
     game_mouse_color = (150, 100, 30)
     if mouse_x != float('inf') and mouse_y != float('inf'):

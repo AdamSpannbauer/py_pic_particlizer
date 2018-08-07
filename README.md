@@ -13,3 +13,9 @@ Converts a pic into a particlized interactive animation (with games!)
 <p align='center'>
   <img src='output/demo.gif' width=90%>
 </p>
+
+## Game Demo
+
+<p align='center'>
+  <img src='output/pacman.gif' width=90%>
+</p>

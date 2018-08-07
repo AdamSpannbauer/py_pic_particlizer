@@ -1,7 +1,10 @@
+from datetime import datetime
 import cv2
 import numpy as np
+import imutils
 from .particle_class import Particle
 from .round_up_game import round_up_game, increment_blinker
+from .pacman_game import pacman_game
 
 
 def image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=(), background_color=(50, 50, 50)):
@@ -40,9 +43,8 @@ def get_contour_color(contour, image, background_color=(50, 50, 50)):
     cy = int(moments["m01"] / moments["m00"])
 
     color = image[cy, cx]
-    color = tuple(int(x) for x in color)
 
-    if color == (0, 0, 0):
+    if sum(color) <= 30:
         mask = np.zeros(image.shape[:2], dtype='uint8')
         cv2.drawContours(mask, [contour], -1, 255, -1)
 
@@ -51,9 +53,8 @@ def get_contour_color(contour, image, background_color=(50, 50, 50)):
         if non_zero:
             color_pool = masked[non_zero[0], non_zero[1], :]
             color = np.mean(color_pool, axis=0)
-            color = tuple(int(x) for x in color)
 
-    return color
+    return tuple(int(x) for x in color)
 
 
 def create_particles(contour_points, contour_colors, canvas, rand_location=True, radius=4):
@@ -85,7 +86,6 @@ def get_mouse_xy(event, x, y, flags, param):
 
 def particlize(image, *args):
     canvas = np.zeros(image.shape, dtype='uint8') + 50
-
     particles = image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=args)
 
     window_name = 'Press R to randomize, G to toggle game mode, ESC to quit'
@@ -96,6 +96,11 @@ def particlize(image, *args):
     game_ind = 0
     blink_counter = 0
     blink_flag = False
+    key = 103
+    pacman = Particle((0, 0), (0, 0), radius=10, color=(0, 255, 255))
+    game_start = datetime.now()
+    game_time = 0
+    best_time = best_round_up_game_time = best_pacman_game_time = 999
     while True:
         canvas_i = canvas.copy()
         if game_mode:
@@ -105,8 +110,27 @@ def particlize(image, *args):
                                                     particles,
                                                     blink_flag,
                                                     (mouse_x, mouse_y))
+                game_time = datetime.now() - game_start
+                game_time = game_time.total_seconds()
+
+                if not game_mode:
+                    best_round_up_game_time = min([best_round_up_game_time, game_time])
+                best_time = best_round_up_game_time
+
             elif game_ind == 1:
-                print('game 1')
+                canvas_i, game_mode = pacman_game(canvas_i, pacman, particles, blink_flag, key)
+
+                game_time = datetime.now() - game_start
+                game_time = game_time.total_seconds()
+
+                if not game_mode:
+                    best_pacman_game_time = min([best_pacman_game_time, game_time])
+                best_time = best_pacman_game_time
+
+            cv2.putText(canvas_i,
+                        '{0:.{1}f} (BEST: {2:.{3}f})'.format(game_time, 2, best_time, 1),
+                        (10, canvas.shape[0] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.1, (30, 30, 200), thickness=3)
 
         else:
             for particle in particles:
@@ -125,5 +149,7 @@ def particlize(image, *args):
                 particle.location = tuple(np.random.randint(1, canvas.shape[1], 1)) + \
                                     tuple(np.random.randint(1, canvas.shape[0], 1))
         elif key == ord('g'):
+            game_start = datetime.now()
             game_mode = not game_mode
-            game_ind = np.random.randint(0, 1)
+            game_ind = np.random.randint(0, 2)
+            pacman = Particle((0, 0), (0, 0), radius=15, color=(0, 255, 255))

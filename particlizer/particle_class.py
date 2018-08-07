@@ -25,7 +25,8 @@ class Particle:
 
     def show(self, canvas):
         location = self.location.astype('int')
-        cv2.circle(canvas, tuple(location), self.radius, self.color, -1)
+        if not self.color == (50, 50, 50):
+            cv2.circle(canvas, tuple(location), self.radius, self.color, -1)
 
     def arrive_step(self, canvas, target=None):
         if target is None:
