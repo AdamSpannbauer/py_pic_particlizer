@@ -16,6 +16,8 @@ Converts a pic into a particlized interactive animation (with games!)
 
 ## Game Demo
 
+Pressing the G key enters game mode.  Game mode will randomly begin 1 of 2 possible mini games.
+
 <p align='center'>
   <img src='output/pacman.gif' width=90%>
 </p>
