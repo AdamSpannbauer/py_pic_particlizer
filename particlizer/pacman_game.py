@@ -52,11 +52,11 @@ def pacman_game(canvas, pacman, particles, blink_flag, key_pressed):
     for particle in particles:
         particle.check_hit(pacman.location, pacman.radius + 3)
         if particle.is_hit:
-            particle.color = (50, 50, 50)
+            particle.color = particle.og_color
             particle_hit_count += 1
-
-        particle.update(canvas, mouse_loc=None)
-        particle.show(canvas)
+        else:
+            particle.update(canvas, mouse_loc=None)
+            particle.show(canvas)
 
     game_mode = True
     if particle_hit_count == len(particles):

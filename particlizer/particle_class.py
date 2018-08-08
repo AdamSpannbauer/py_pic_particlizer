@@ -3,7 +3,7 @@ import cv2
 
 
 class Particle:
-    def __init__(self, location, target, radius=4, color=(255, 255, 255), max_speed=75):
+    def __init__(self, location, target, radius=4, color=(255, 255, 255), max_speed=75, background_color=(50, 50, 50)):
         self.target = np.array(target)
         self.location = np.array(location, dtype='float64')
         self.speed = np.array([0, 0], dtype='float64')
@@ -13,6 +13,7 @@ class Particle:
         self.radius = radius
         self.og_color = color
         self.color = color
+        self.background_color = background_color
 
         self.game_target = np.array(target)
         self.is_hit = False
@@ -25,7 +26,7 @@ class Particle:
 
     def show(self, canvas):
         location = self.location.astype('int')
-        if not self.color == (50, 50, 50):
+        if not self.color == self.background_color:
             cv2.circle(canvas, tuple(location), self.radius, self.color, -1)
 
     def arrive_step(self, canvas, target=None):
@@ -50,7 +51,7 @@ class Particle:
         xy_diff = np.array(mouse_loc) - self.location
         dist = np.linalg.norm(xy_diff)
 
-        if dist <= mouse_range or self.color == (50, 50, 50):
+        if dist <= mouse_range or self.color == self.background_color:
             self.is_hit = True
             self.game_target = self.target
             self.color = self.og_color

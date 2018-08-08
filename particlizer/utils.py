@@ -1,7 +1,6 @@
 from datetime import datetime
 import cv2
 import numpy as np
-import imutils
 from .particle_class import Particle
 from .round_up_game import round_up_game, increment_blinker
 from .pacman_game import pacman_game
@@ -26,7 +25,12 @@ def image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=(), back
             contour_colors.append(color)
             contour_points.append(down_sample_points(c, every_n))
 
-    particles = create_particles(contour_points, contour_colors, image, rand_location=True, radius=radius)
+    particles = create_particles(contour_points,
+                                 contour_colors,
+                                 image,
+                                 rand_location=True,
+                                 radius=radius,
+                                 background_color=background_color)
 
     return particles
 
@@ -57,7 +61,8 @@ def get_contour_color(contour, image, background_color=(50, 50, 50)):
     return tuple(int(x) for x in color)
 
 
-def create_particles(contour_points, contour_colors, canvas, rand_location=True, radius=4):
+def create_particles(contour_points, contour_colors, canvas, rand_location=True, radius=4,
+                     background_color=(50, 50, 50)):
     particles = []
     for i, points in enumerate(contour_points):
         color = contour_colors[i]
@@ -66,7 +71,7 @@ def create_particles(contour_points, contour_colors, canvas, rand_location=True,
             if rand_location:
                 location = tuple(np.random.randint(1, canvas.shape[1], 1)) + \
                            tuple(np.random.randint(1, canvas.shape[0], 1))
-            particle = Particle(location, target, radius, color)
+            particle = Particle(location, target, radius, color, background_color=background_color)
             particles.append(particle)
 
     return particles
@@ -84,8 +89,8 @@ def get_mouse_xy(event, x, y, flags, param):
         mouse_y = y
 
 
-def particlize(image, *args):
-    canvas = np.zeros(image.shape, dtype='uint8') + 50
+def particlize(image, background_color=(50, 50, 50), *args):
+    canvas = np.zeros(image.shape, dtype='uint8') + np.array(background_color, dtype='uint8')
     particles = image_to_particles(image, canvas, every_n=20, radius=4, thresh_args=args)
 
     window_name = 'Press R to randomize, G to toggle game mode, ESC to quit'
